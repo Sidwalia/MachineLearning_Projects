@@ -1,4 +1,63 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
+library(MASS)
+library(ISLR)
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(janitor)
+library(mice)
+library(glmnet)
+library(ggplot2)
+
+Data <- read_csv(choose.files())
+
+
+model_ALL <- lm(default_0 ~., Data)
+summary(model_ALL)
+
+model <- lm(default_0 ~ LIMIT_BAL + EDUCATION + MARRIAGE + AGE + PAY_1 + PAY_2 +
+                          PAY_3 + BILL_AMT1 + PAY_AMT1, Data)
+
+summary(model_final)
+
+
+
+# CREATNG A FUNCTION FROM MODEL TO BE UPLOADED TO AZURE ML SERVICE
+
+mypredict <- function(newdata)
+ 
+{
+    require(stats)
+      predict(model, newdata, type = "response")
+        
+}       
+        
+        
+ print(mypredict(Data))       
+        
+        
+ if (!require("devtools")) install.packages("devtools")
+ devtools::install_github("RevolutionAnalytics/azureml")
+ devtools::install_github("Azure-MachineLearning-ClientLibrary-R", "Azure", subdir = "AzureML")
+ 
+ install.packages("devtools")
+ install.packages("azuremlsdk")
+ library(azuremlsdk)
+ library(devtools)
+        
+ 
+ wsID = "cf4327e5d7674ff88153de5400a7a505"
+ 
+ wsAuth = "zV4BkbLw22U+gmECFYLh3e0U6Hj2SCowTCikoQ/3TqSvDPEy6CUryDakEdgO/X6JbHdwU18rVIV28NnyQen9dQ=="
+
+ wsobj = workspace(wsID, wsAuth) 
+
+ 
+ # CREATE REST API
+ 
+ creditwebservice <- publishWebService(wsobj,
+                                       fun = mypredict,
+                                       name = "creditwebservice",
+                                       inputSchema = Data
+                                       )
+
+                       
